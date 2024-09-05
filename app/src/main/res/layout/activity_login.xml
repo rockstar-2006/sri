@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".login">
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/lottieAnimationView"
+        android:layout_width="395dp"
+        android:layout_height="380dp"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/in"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="0dp" />
+    <TextView
+
+        android:id="@+id/textbot"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Login"
+        android:textColor="#0d6e6a"
+        android:textSize="45sp"
+        android:fontFamily="@font/ibm"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/lottieAnimationView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+
+        />
+
+    <EditText
+        android:id="@+id/edit1"
+        tools:ignore="MissingConstraints"
+        android:layout_width="350dp"
+        android:layout_height="45dp"
+        android:textColorHint="#0d6e6a"
+        android:background="@drawable/forgot"
+        android:hint="Email or Phone number"
+        android:textColor="#0d6e6a"
+        android:textStyle="bold"
+        android:textSize="18dp"
+        android:fontFamily="@font/ibm"
+        android:layout_marginTop="30dp"
+        android:paddingLeft="20dp"
+        app:layout_constraintTop_toBottomOf="@id/textbot"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+    <EditText android:layout_width="350dp" android:layout_height="45dp" android:background="@drawable/forgot"  android:textColor="#0d6e6a" android:textStyle="bold" android:textSize="18dp" android:layout_marginTop="20dp" android:paddingLeft="20dp"
+        android:hint="Password"
+        android:textColorHint="#0d6e6a"
+        app:layout_constraintTop_toBottomOf="@id/edit1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:fontFamily="@font/ibm"
+        android:id="@+id/edit2"/>
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="350dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="40dp"
+        android:background="@drawable/button"
+        android:fontFamily="@font/ibm"
+        android:gravity="center"
+        android:text="login"
+        android:textColor="@color/white"
+        android:textSize="23sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.491"
+        app:layout_constraintStart_toStartOf="parent"
+
+        app:layout_constraintTop_toBottomOf="@id/edit2" />
+
+    <TextView
+
+        android:id="@+id/registerbtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Don't have a account Register now..."
+        android:textColor="#0d6e6a"
+        android:textSize="16sp"
+        android:fontFamily="@font/ibm"
+        android:gravity="center"
+        android:layout_marginTop="10dp"
+        app:layout_constraintTop_toBottomOf="@id/button2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+
+        />
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

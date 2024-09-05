@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".register">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/lottieAnimationView"
+            android:layout_width="395dp"
+            android:layout_height="360dp"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true"
+            app:lottie_rawRes="@raw/reg"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:layout_editor_absoluteX="0dp"
+            tools:layout_editor_absoluteY="0dp" />
+
+        <!-- Heading: Personal Details -->
+        <TextView
+            android:id="@+id/textViewPersonalDetails"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Personal Details"
+            android:textSize="24sp"
+            android:textColor="#0d6e6a"
+            android:fontFamily="@font/ibm"
+            app:layout_constraintTop_toBottomOf="@id/lottieAnimationView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- Horizontal Layout for Name and Last Name -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/constraintLayoutName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/textViewPersonalDetails"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginBottom="16dp">
+
+            <!-- Full Name -->
+            <EditText
+                android:id="@+id/editTextFullName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:background="@drawable/forgot"
+                android:hint="Full Name"
+                tools:ignore="MissingConstraints"
+
+                android:textColorHint="#0d6e6a"
+                android:textColor="#0d6e6a"
+                android:textSize="18sp"
+                android:fontFamily="@font/ibm"
+                android:paddingLeft="20dp"
+                app:layout_constraintWidth_percent="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/editTextLastName"
+                android:layout_marginEnd="12dp"
+                android:layout_marginBottom="12dp"/>
+
+            <!-- Last Name -->
+            <EditText
+                android:id="@+id/editTextLastName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:background="@drawable/forgot"
+                android:hint="Email"
+                android:textColorHint="#0d6e6a"
+                tools:ignore="MissingConstraints"
+                android:textColor="#0d6e6a"
+                android:textSize="18sp"
+                android:fontFamily="@font/ibm"
+                android:paddingLeft="20dp"
+                app:layout_constraintWidth_percent="0.5"
+                app:layout_constraintStart_toEndOf="@id/editTextFullName"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginBottom="12dp"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Phone Number -->
+        <EditText
+            android:id="@+id/editTextPhoneNumber"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/forgot"
+            android:hint="Password"
+            android:textColorHint="#0d6e6a"
+            android:textColor="#0d6e6a"
+            android:textSize="18sp"
+            android:fontFamily="@font/ibm"
+            android:paddingLeft="20dp"
+            app:layout_constraintTop_toBottomOf="@id/constraintLayoutName"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- New Field -->
+        <EditText
+            android:id="@+id/editTextNewField"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/forgot"
+            android:hint="confirm password"
+            android:textColorHint="#0d6e6a"
+            android:textColor="#0d6e6a"
+            android:textSize="18sp"
+            android:fontFamily="@font/ibm"
+            android:paddingLeft="20dp"
+            app:layout_constraintTop_toBottomOf="@id/editTextPhoneNumber"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Heading: License Information -->
+        <TextView
+            android:id="@+id/textViewLicenseInformation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="License Information"
+            android:textSize="24sp"
+            android:textColor="#0d6e6a"
+            android:fontFamily="@font/ibm"
+            app:layout_constraintTop_toBottomOf="@id/editTextNewField"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- License Number -->
+        <EditText
+            android:id="@+id/editTextLicenseNumber"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/forgot"
+            android:hint="License Number"
+            android:textColorHint="#0d6e6a"
+            android:textColor="#0d6e6a"
+            android:textSize="18sp"
+            android:fontFamily="@font/ibm"
+            android:paddingLeft="20dp"
+            app:layout_constraintTop_toBottomOf="@id/textViewLicenseInformation"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- License Expiry Date -->
+        <EditText
+            android:id="@+id/editTextLicenseExpiryDate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/forgot"
+            android:hint="License Expiry Date"
+            android:textColorHint="#0d6e6a"
+            android:textColor="#0d6e6a"
+            android:textSize="18sp"
+            android:fontFamily="@font/ibm"
+            android:paddingLeft="20dp"
+            app:layout_constraintTop_toBottomOf="@id/editTextLicenseNumber"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Vehicle Registration Number -->
+        <EditText
+            android:id="@+id/editTextVehicleRegNumber"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/forgot"
+            android:hint="Vehicle Registration Number"
+            android:textColorHint="#0d6e6a"
+            android:textColor="#0d6e6a"
+            android:textSize="18sp"
+            android:fontFamily="@font/ibm"
+            android:paddingLeft="20dp"
+            app:layout_constraintTop_toBottomOf="@id/editTextLicenseExpiryDate"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Vehicle Type -->
+        <EditText
+            android:id="@+id/editTextVehicleType"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/forgot"
+            android:hint="Vehicle Type"
+            android:textColorHint="#0d6e6a"
+            android:textColor="#0d6e6a"
+            android:textSize="18sp"
+            android:fontFamily="@font/ibm"
+            android:paddingLeft="20dp"
+            app:layout_constraintTop_toBottomOf="@id/editTextVehicleRegNumber"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Vehicle Model -->
+
+        <Button
+            android:id="@+id/buttonRegister"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="#0d6e6a"
+            android:fontFamily="@font/ibm"
+            android:text="Register"
+            android:textColor="#ffffff"
+            android:textSize="18sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/editTextVehicleType"
+            app:layout_constraintVertical_bias="1.0" />
+        <TextView
+            android:id="@+id/loginnow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Already have an account?"
+            android:textColor="#0d6e6a"
+            android:textSize="16sp"
+            android:fontFamily="@font/ibm"
+            android:gravity="center"
+            app:layout_constraintTop_toBottomOf="@id/buttonRegister"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="1dp" />
+
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>
