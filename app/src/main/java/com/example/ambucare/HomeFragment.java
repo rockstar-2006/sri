@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 
 public class HomeFragment extends Fragment {
 
+    private Bundle userData;
 
 
     @Override

@@ -5,4 +5,5 @@
     <color name="red">#FF0000</color>
     <color name="colorPrimary">#cccccccc</color>
     <color name="colorAccent">#ffffff</color>
+    <color name="lavendar">#0d6e6a</color>
 </resources>

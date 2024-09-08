@@ -1,24 +1,29 @@
 package com.example.ambucare;
-import android.app.Application;
+
+import static com.example.ambucare.Common.currentUser;
+
 import android.Manifest;
-import android.content.Intent;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
+import android.os.Looper;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Toast;
+
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
-import com.google.android.gms.Common;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -32,7 +37,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.FirebaseApp;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -45,6 +49,11 @@ import com.karumi.dexter.listener.PermissionGrantedResponse;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.single.PermissionListener;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
+
 public class mapFragment extends Fragment implements OnMapReadyCallback {
 
     private GoogleMap mMap;
@@ -52,131 +61,21 @@ public class mapFragment extends Fragment implements OnMapReadyCallback {
     private LocationRequest locationRequest;
     private LocationCallback locationCallback;
     private SupportMapFragment mapFragment;
-
-    private DatabaseReference onlineRef, currentUserRef, diverLocationRef;
     private GeoFire geoFire;
-
-    FirebaseAuth firebaseAuth;
-    FirebaseAuth.AuthStateListener authStateListener;
-
-    private ValueEventListener onlineValueEventListener = new ValueEventListener() {
-        @Override
-        public void onDataChange(@NonNull DataSnapshot snapshot) {
-            if (snapshot.exists() && currentUserRef != null) {
-                currentUserRef.onDisconnect().removeValue();
-            }
-        }
-
-        @Override
-        public void onCancelled(@NonNull DatabaseError error) {
-            Snackbar.make(mapFragment.getView(), error.getMessage(), Snackbar.LENGTH_LONG).show();
-        }
-    };
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (onlineRef != null) {
-            registerOnlineSystem();
-        }
-    }
-
-    private void registerOnlineSystem() {
-    }
-
-    @Override
-    public void onDestroy() {
-        if (fusedLocationProviderClient != null && locationCallback != null) {
-            fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireContext());
-        }
-
-        if (geoFire != null && firebaseAuth.getCurrentUser() != null) {
-            geoFire.removeLocation(firebaseAuth.getCurrentUser().getUid());
-        }
-
-        if (onlineRef != null) {
-            onlineRef.removeEventListener(onlineValueEventListener);
-        }
-
-        super.onDestroy();
-    }
-
-    private void init() {
-        FirebaseApp.initializeApp(requireContext());
-        firebaseAuth = FirebaseAuth.getInstance();
-
-        authStateListener = firebaseAuth -> {
-            if (firebaseAuth.getCurrentUser() != null) {
-                // User is authenticated
-                setupDatabaseReferences();
-            } };
-    }
-
-    private void setupDatabaseReferences() {
-        onlineRef = FirebaseDatabase.getInstance().getReference(".info/connected");
-        diverLocationRef = FirebaseDatabase.getInstance().getReference(Common.USERS_LOCATION_REFERENCE);
-        currentUserRef = diverLocationRef.child(firebaseAuth.getCurrentUser().getUid());
-        geoFire = new GeoFire(diverLocationRef);
-
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireContext());
-        registerOnlineSystem();
-        setupLocationRequest();
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        init(); // Initialize Firebase Authentication and setup listener
-        if (firebaseAuth != null) {
-            firebaseAuth.addAuthStateListener(authStateListener);
-        }
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        if (firebaseAuth != null && authStateListener != null) {
-            firebaseAuth.removeAuthStateListener(authStateListener);
-        }
-    }
-
-    private void setupLocationRequest() {
-        locationRequest = new LocationRequest.Builder(LocationRequest.PRIORITY_HIGH_ACCURACY, 5000)
-                .setMinUpdateDistanceMeters(10f)
-                .setWaitForAccurateLocation(true)
-                .setMinUpdateIntervalMillis(3000)
-                .build();
-
-        locationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(@NonNull LocationResult locationResult) {
-                if (locationResult.getLastLocation() != null && mMap != null) {
-                    LatLng newPosition = new LatLng(locationResult.getLastLocation().getLatitude(), locationResult.getLastLocation().getLongitude());
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(newPosition, 18f));
-
-                    Log.d("LocationUpdate", "Latitude: " + newPosition.latitude + ", Longitude: " + newPosition.longitude);
-
-                    geoFire.setLocation(firebaseAuth.getCurrentUser().getUid(),
-                            new GeoLocation(locationResult.getLastLocation().getLatitude(),
-                                    locationResult.getLastLocation().getLongitude()), (key, error) -> {
-                                if (error != null) {
-                                    Snackbar.make(mapFragment.getView(), error.getMessage(), Snackbar.LENGTH_LONG).show();
-                                    Log.e("GeoFireError", error.getMessage());
-                                } else {
-                                    Snackbar.make(mapFragment.getView(), "You're online", Snackbar.LENGTH_LONG).show();
-                                    Log.d("GeoFireSuccess", "Location updated successfully");
-                                }
-                            });
-                }
-            }
-        };
-    }
+    private DatabaseReference onlineRef, driversLocationRef;
+    private ValueEventListener onlineValueEventListener;
+    private FirebaseDatabase database; // Initialize FirebaseDatabase reference here
+    private String userId; // Declare userId as a class-level variable
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_map, container, false);
+        FirebaseApp.initializeApp(getContext());
 
-        // Initialize Map Fragment
+        // Initialize Firebase references and user ID
+        initFirebase();
+
+        // Initialize the map fragment
         mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
@@ -185,10 +84,46 @@ public class mapFragment extends Fragment implements OnMapReadyCallback {
         return rootView;
     }
 
+    private String getUserId() {
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+        String userId = sharedPreferences.getString("user_id", null);
+
+        if (userId == null) {
+            userId = UUID.randomUUID().toString(); // Generate a new unique ID
+            sharedPreferences.edit().putString("user_id", userId).apply(); // Store the ID locally
+        }
+        return userId;
+    }
+
+    private void clearUserId() {
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+        sharedPreferences.edit().remove("user_id").apply(); // Clear the stored ID
+    }
+
+    private void initFirebase() {
+        database = FirebaseDatabase.getInstance(); // Initialize Firebase database reference here
+        driversLocationRef = database.getReference("users"); // Initialize reference to users node
+        geoFire = new GeoFire(driversLocationRef.child("driverLocation"));
+        onlineRef = database.getReference().child("driverlocation");
+        userId = getUserId(); // Initialize userId here
+    }
+
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
+        requestLocationPermission();
 
+        try {
+            boolean success = googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(getContext(), R.raw.uber_maps_style));
+            if (!success) {
+                Log.e("EMDT_ERROR", "Style parsing error");
+            }
+        } catch (Resources.NotFoundException e) {
+            Log.e("EMDT_ERROR", e.getMessage());
+        }
+    }
+
+    private void requestLocationPermission() {
         Dexter.withContext(getContext())
                 .withPermission(Manifest.permission.ACCESS_FINE_LOCATION)
                 .withListener(new PermissionListener() {
@@ -197,13 +132,9 @@ public class mapFragment extends Fragment implements OnMapReadyCallback {
                         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                             mMap.setMyLocationEnabled(true);
                             mMap.getUiSettings().setMyLocationButtonEnabled(true);
+                            startLocationUpdates();
 
-                            // Customize the location button position
-                            View locationButton = ((View) mapFragment.getView().findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
-                            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) locationButton.getLayoutParams();
-                            params.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
-                            params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-                            params.setMargins(0, 0, 0, 50);
+                            Snackbar.make(getView(), getString(R.string.permission_require), Snackbar.LENGTH_SHORT).show();
                         }
                     }
 
@@ -217,14 +148,114 @@ public class mapFragment extends Fragment implements OnMapReadyCallback {
                         token.continuePermissionRequest();
                     }
                 }).check();
+    }
 
-        try {
-            boolean success = googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(getContext(), R.raw.uber_maps_style));
-            if (!success) {
-                Log.e("EMDT_ERROR", "Style parsing error");
+    private void startLocationUpdates() {
+        locationRequest = LocationRequest.create()
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setInterval(5000)
+                .setFastestInterval(3000)
+                .setSmallestDisplacement(10f);
+
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(@NonNull LocationResult locationResult) {
+                super.onLocationResult(locationResult);
+
+                LatLng newPosition = new LatLng(locationResult.getLastLocation().getLatitude(), locationResult.getLastLocation().getLongitude());
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(newPosition, 18f));
+
+                Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
+                List<Address> addressList;
+                try {
+                    addressList = geocoder.getFromLocation(locationResult.getLastLocation().getLatitude(),
+                            locationResult.getLastLocation().getLongitude(), 1);
+
+                    if (addressList != null && addressList.size() > 0) {
+                        String cityName = addressList.get(0).getLocality();
+
+                        // Update location in Firebase using GeoFire
+                        geoFire.setLocation(userId,
+                                new GeoLocation(locationResult.getLastLocation().getLatitude(), locationResult.getLastLocation().getLongitude()),
+                                new GeoFire.CompletionListener() {
+                                    @Override
+                                    public void onComplete(String key, DatabaseError error) {
+                                        if (error != null) {
+                                            Snackbar.make(mapFragment.getView(), error.getMessage(), Snackbar.LENGTH_LONG).show();
+                                        } else {
+                                            Snackbar.make(mapFragment.getView(), "You're online", Snackbar.LENGTH_LONG).show();
+                                        }
+                                    }
+                                });
+
+                        // Save the city name to Firebase Realtime Database
+                        driversLocationRef.child(userId).child("driverLocation").child("cityName").setValue(cityName);
+                    }
+
+                } catch (IOException e) {
+                    Snackbar.make(getView(), e.getMessage(), Snackbar.LENGTH_SHORT).show();
+                }
+
+                // Update additional data for each user
+                driversLocationRef.child(userId).child("driverLocation").child("latitude").setValue(locationResult.getLastLocation().getLatitude());
+                driversLocationRef.child(userId).child("driverLocation").child("longitude").setValue(locationResult.getLastLocation().getLongitude());
+                driversLocationRef.child(userId).child("fullName").setValue("John Doe");
+                driversLocationRef.child(userId).child("licenseExpiryDate").setValue("2025-12-31");
+                driversLocationRef.child(userId).child("licenseNumber").setValue("123456");
+                driversLocationRef.child(userId).child("password").setValue("securepassword");
+                driversLocationRef.child(userId).child("phoneNumber").setValue("9876543210");
+                driversLocationRef.child(userId).child("vehicleRegistrationNumber").setValue("AB123CD");
             }
-        } catch (Resources.NotFoundException e) {
-            Log.e("EMDT_ERROR", e.getMessage());
+
+        };
+
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
+        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Snackbar.make(getView(), getString(R.string.permission_require), Snackbar.LENGTH_SHORT).show();
+            return;
+        }
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        registerOnlineSystem();
+    }
+
+    private void registerOnlineSystem() {
+        onlineValueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists() && driversLocationRef != null) {
+                    driversLocationRef.child(userId).onDisconnect().removeValue();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                if (mapFragment.getView() != null) {
+                    Snackbar.make(mapFragment.getView(), error.getMessage(), Snackbar.LENGTH_LONG).show();
+                }
+            }
+        };
+        if (onlineRef != null) {
+            onlineRef.addValueEventListener(onlineValueEventListener);
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (fusedLocationProviderClient != null && locationCallback != null) {
+            fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+        }
+        if (geoFire != null) {
+            geoFire.removeLocation(userId);
+        }
+        if (onlineRef != null && onlineValueEventListener != null) {
+            onlineRef.removeEventListener(onlineValueEventListener);
         }
     }
 }
