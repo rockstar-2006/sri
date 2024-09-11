@@ -15,11 +15,15 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
+import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Interpolator;
+import android.view.animation.LinearInterpolator;
 import android.widget.Toast;
 
 import com.firebase.geofire.GeoFire;
@@ -35,6 +39,8 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.DataSnapshot;
@@ -63,6 +69,7 @@ public class mapFragment extends Fragment implements OnMapReadyCallback {
     private SupportMapFragment mapFragment;
     private GeoFire geoFire;
     private DatabaseReference onlineRef, driversLocationRef;
+    private Marker driverMarker;
     private ValueEventListener onlineValueEventListener;
     private FirebaseDatabase database; // Initialize FirebaseDatabase reference here
     private String userId; // Declare userId as a class-level variable
@@ -80,6 +87,8 @@ public class mapFragment extends Fragment implements OnMapReadyCallback {
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
+        listenForRiderLocation();
+
 
         return rootView;
     }
@@ -101,12 +110,32 @@ public class mapFragment extends Fragment implements OnMapReadyCallback {
     }
 
     private void initFirebase() {
-        database = FirebaseDatabase.getInstance(); // Initialize Firebase database reference here
-        driversLocationRef = database.getReference("users"); // Initialize reference to users node
-        geoFire = new GeoFire(driversLocationRef.child("driverLocation"));
-        onlineRef = database.getReference().child("driverlocation");
-        userId = getUserId(); // Initialize userId here
+        // Initialize Firebase
+        database = FirebaseDatabase.getInstance();
+
+        // Get the user ID
+        userId = getUserId();
+
+        // Make sure userId is not null before proceeding
+        if (userId != null && !userId.isEmpty()) {
+            driversLocationRef = database.getReference("users").child(userId).child("driverLocation");
+
+            // Initialize GeoFire with the correct reference
+            geoFire = new GeoFire(driversLocationRef);
+
+            // Reference for online status
+            onlineRef = database.getReference().child("driverlocation");
+
+            // Remove the driver location on disconnect
+            driversLocationRef.onDisconnect().removeValue();
+
+            // Clear any existing data for the user
+            driversLocationRef.removeValue();
+        } else {
+            Log.e("FirebaseError", "User ID is null or empty. Cannot initialize Firebase references.");
+        }
     }
+
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
@@ -153,9 +182,9 @@ public class mapFragment extends Fragment implements OnMapReadyCallback {
     private void startLocationUpdates() {
         locationRequest = LocationRequest.create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                .setInterval(5000)
-                .setFastestInterval(3000)
-                .setSmallestDisplacement(10f);
+                .setInterval(15000)
+                .setFastestInterval(10000)
+                .setSmallestDisplacement(50f);
 
         locationCallback = new LocationCallback() {
             @Override
@@ -175,38 +204,29 @@ public class mapFragment extends Fragment implements OnMapReadyCallback {
                         String cityName = addressList.get(0).getLocality();
 
                         // Update location in Firebase using GeoFire
-                        geoFire.setLocation(userId,
-                                new GeoLocation(locationResult.getLastLocation().getLatitude(), locationResult.getLastLocation().getLongitude()),
-                                new GeoFire.CompletionListener() {
-                                    @Override
-                                    public void onComplete(String key, DatabaseError error) {
-                                        if (error != null) {
-                                            Snackbar.make(mapFragment.getView(), error.getMessage(), Snackbar.LENGTH_LONG).show();
-                                        } else {
-                                            Snackbar.make(mapFragment.getView(), "You're online", Snackbar.LENGTH_LONG).show();
-                                        }
-                                    }
-                                });
+                        geoFire.setLocation(userId, new GeoLocation(newPosition.latitude, newPosition.longitude), new GeoFire.CompletionListener() {
+                            @Override
+                            public void onComplete(String key, DatabaseError error) {
+                                if (error != null) {
+                                    Snackbar.make(mapFragment.getView(), error.getMessage(), Snackbar.LENGTH_LONG).show();
+                                } else {
+                                    Snackbar.make(mapFragment.getView(), "You're online", Snackbar.LENGTH_LONG).show();
+                                }
+                            }
+                        });
 
                         // Save the city name to Firebase Realtime Database
-                        driversLocationRef.child(userId).child("driverLocation").child("cityName").setValue(cityName);
+                        driversLocationRef.child("cityName").setValue(cityName);
                     }
 
                 } catch (IOException e) {
                     Snackbar.make(getView(), e.getMessage(), Snackbar.LENGTH_SHORT).show();
                 }
 
-                // Update additional data for each user
-                driversLocationRef.child(userId).child("driverLocation").child("latitude").setValue(locationResult.getLastLocation().getLatitude());
-                driversLocationRef.child(userId).child("driverLocation").child("longitude").setValue(locationResult.getLastLocation().getLongitude());
-                driversLocationRef.child(userId).child("fullName").setValue("John Doe");
-                driversLocationRef.child(userId).child("licenseExpiryDate").setValue("2025-12-31");
-                driversLocationRef.child(userId).child("licenseNumber").setValue("123456");
-                driversLocationRef.child(userId).child("password").setValue("securepassword");
-                driversLocationRef.child(userId).child("phoneNumber").setValue("9876543210");
-                driversLocationRef.child(userId).child("vehicleRegistrationNumber").setValue("AB123CD");
+                // Update only necessary data once
+                driversLocationRef.child("latitude").setValue(locationResult.getLastLocation().getLatitude());
+                driversLocationRef.child("longitude").setValue(locationResult.getLastLocation().getLongitude());
             }
-
         };
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
@@ -229,9 +249,11 @@ public class mapFragment extends Fragment implements OnMapReadyCallback {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists() && driversLocationRef != null) {
-                    driversLocationRef.child(userId).onDisconnect().removeValue();
+                    // Ensure the driver location is removed when offline
+                    driversLocationRef.child(userId).child("driverLocation").onDisconnect().removeValue();
                 }
             }
+
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
@@ -239,6 +261,7 @@ public class mapFragment extends Fragment implements OnMapReadyCallback {
                     Snackbar.make(mapFragment.getView(), error.getMessage(), Snackbar.LENGTH_LONG).show();
                 }
             }
+
         };
         if (onlineRef != null) {
             onlineRef.addValueEventListener(onlineValueEventListener);
@@ -257,5 +280,67 @@ public class mapFragment extends Fragment implements OnMapReadyCallback {
         if (onlineRef != null && onlineValueEventListener != null) {
             onlineRef.removeEventListener(onlineValueEventListener);
         }
+        // Remove the driver location from the database
+        if (driversLocationRef != null) {
+            driversLocationRef.removeValue();
+        }
+        FirebaseDatabase.getInstance().goOffline();
+    }
+    private void listenForRiderLocation() {
+        DatabaseReference riderLocationRef = FirebaseDatabase.getInstance().getReference("Riders").child("Rider").child("location");
+        riderLocationRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    double latitude = dataSnapshot.child("latitude").getValue(Double.class);
+                    double longitude = dataSnapshot.child("longitude").getValue(Double.class);
+
+                    LatLng riderLatLng = new LatLng(latitude, longitude);
+                    moveDriverToRider(riderLatLng);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("FirebaseError", error.getMessage());
+            }
+        });
+    }
+
+
+    private void moveDriverToRider(LatLng riderLatLng) {
+        if (driverMarker == null) {
+            // Add the driver marker to the map if it does not exist yet
+            driverMarker = mMap.addMarker(new MarkerOptions().position(riderLatLng).title("Driver"));
+        } else {
+            // Smoothly animate the driver marker to the rider's location
+            animateMarker(driverMarker, riderLatLng);
+        }
+    }
+
+    private void animateMarker(final Marker marker, final LatLng toPosition) {
+        final LatLng startPosition = marker.getPosition();
+        final long duration = 2000; // Duration of the animation in milliseconds
+        final Handler handler = new Handler();
+        final long start = SystemClock.uptimeMillis();
+
+        final Interpolator interpolator = new LinearInterpolator();
+
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                long elapsed = SystemClock.uptimeMillis() - start;
+                float t = interpolator.getInterpolation((float) elapsed / duration);
+                double lng = t * toPosition.longitude + (1 - t) * startPosition.longitude;
+                double lat = t * toPosition.latitude + (1 - t) * startPosition.latitude;
+
+                marker.setPosition(new LatLng(lat, lng));
+
+                // Repeat till the animation duration completes
+                if (t < 1.0) {
+                    handler.postDelayed(this, 16);
+                }
+            }
+        });
     }
 }
