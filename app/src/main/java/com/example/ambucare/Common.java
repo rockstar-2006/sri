@@ -7,4 +7,5 @@ public class Common {
 
 
     public  static mapFragment currentUser;
+
 }
