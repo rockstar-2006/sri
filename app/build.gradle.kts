@@ -49,9 +49,7 @@ dependencies {
     implementation("com.firebase:geofire-android:3.2.0") // Updated to the latest version
 
     // Other dependencies
-    implementation ("com.airbnb.android:lottie:6.0.0")
-
-
+    implementation("com.airbnb.android:lottie:5.0.3")
 
     implementation("com.google.android.material:material:1.7.0")
     implementation("androidx.appcompat:appcompat:1.6.1")

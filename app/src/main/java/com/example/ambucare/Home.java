@@ -20,40 +20,48 @@ import android.widget.FrameLayout;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class Home extends AppCompatActivity {
-    private ImageView imageView;
+    private BottomNavigationView bottomNavigationView;
+    private FrameLayout frameLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.fragment_home);
+        setContentView(R.layout.activity_home);
 
-        imageView = findViewById(R.id.imageView);
-
-        // Check if the app was launched with an intent
-        Intent intent = getIntent();
-        if (intent != null) {
-            // Get the image URI from the intent
-            Uri imageUri = intent.getData();
-
-            // Check if the URI is not null
-            if (imageUri != null) {
-                // Display the image in the ImageView
-                displayImage(imageUri);
+        bottomNavigationView = findViewById(R.id.bottomnavigation);
+        frameLayout = findViewById(R.id.frame);
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                int itemId = item.getItemId();
+                if (itemId == R.id.navHome) {
+                    loadFragment(new HomeFragment(), false);
+                } else if (itemId == R.id.navmap) {
+                    loadFragment(new mapFragment(), false);
+                } else if (itemId == R.id.navprofile) {
+                    loadFragment(new profileFragment(), false); // Load profile fragment
+                } else {
+                    loadFragment(new chatbotFragment(), false);
+                }
+                return true; // Return true to show the selected item as active
             }
-        }
+        });
+
+        loadFragment(new HomeFragment(), true);
     }
 
-    private void displayImage(Uri imageUri) {
-        try {
-            // Get the bitmap from the image URI
-            Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(imageUri));
+    private void loadFragment(Fragment fragment, boolean addToBackStack) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-            // Display the bitmap in the ImageView
-            imageView.setImageBitmap(bitmap);
-        } catch (Exception e) {
-            // Handle any exceptions that occur while displaying the image
-            e.printStackTrace();
+        fragmentTransaction.replace(R.id.frame, fragment);
+
+        if (addToBackStack) {
+            fragmentTransaction.addToBackStack(null);
         }
+
+        fragmentTransaction.commit();
     }
+
 }
 
