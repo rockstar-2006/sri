@@ -9,8 +9,8 @@
     <!-- Lottie Animation View -->
     <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/lottieAnimationView"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
+        android:layout_width="420dp"
+        android:layout_height="420dp"
         app:lottie_autoPlay="true"
         app:lottie_loop="true"
         app:lottie_rawRes="@raw/log"
@@ -22,11 +22,11 @@
     <!-- Create a New Account Text -->
     <TextView
         android:id="@+id/dot"
-        android:layout_width="wrap_content"
+        android:layout_width="400dp"
         android:layout_height="wrap_content"
         android:text="Create a new account"
         android:textColor="#0d6e6a"
-        android:textSize="14sp"
+        android:textSize="23sp"
         android:fontFamily="@font/ibm"
         android:gravity="center"
         app:layout_constraintTop_toBottomOf="@id/lottieAnimationView"
@@ -35,35 +35,39 @@
         android:layout_marginTop="4dp" />
 
     <!-- Login Button -->
-    <Button
-        android:id="@+id/button1"
-        android:layout_width="200dp"
-        android:layout_height="40dp"
-        android:background="@drawable/button"
-        android:gravity="center"
-        android:text="Login"
-        android:fontFamily="@font/ibm"
-        android:textSize="16sp"
-        android:textColor="@color/white"
-        app:layout_constraintTop_toBottomOf="@id/dot"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp" />
 
     <!-- Register Button -->
+
+    <Button
+        android:id="@+id/button1"
+        android:layout_width="210dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="28dp"
+        android:background="@drawable/button"
+        android:fontFamily="@font/ibm"
+        android:gravity="center"
+        android:text="Login"
+        android:textColor="@color/white"
+        android:textSize="23sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/dot" />
+
     <Button
         android:id="@+id/button2"
-        android:layout_width="200dp"
-        android:layout_height="40dp"
+        android:layout_width="210dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="40dp"
         android:background="@drawable/button"
+        android:fontFamily="@font/ibm"
         android:gravity="center"
         android:text="Register"
-        android:fontFamily="@font/ibm"
-        android:textSize="16sp"
         android:textColor="@color/white"
-        app:layout_constraintTop_toBottomOf="@id/button1"
-        app:layout_constraintStart_toStartOf="parent"
+        android:textSize="22sp"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp" />
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/button1" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

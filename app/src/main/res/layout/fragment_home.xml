@@ -1,13 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- Lottie Animation at the Top -->
+
+    <!-- ImageView centered below the Lottie Animation -->
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/lottieAnimationView"
+        android:layout_width="match_parent"
+        android:layout_height="280dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="2dp"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/dt" />
 
     <ImageView
         android:id="@+id/imageView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="fitCenter" />
+        android:layout_width="wrap_content"
+        android:layout_height="360dp"
+        android:layout_below="@id/lottieAnimationView"
+        android:src="@drawable/img"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:contentDescription="@string/image_view" />
 
-</LinearLayout>
+    <!-- Toolbar at the bottom with TextBox and Share Button -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/bottomToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="0dp"
+        android:background="?attr/colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+
+        <!-- TextBox (EditText) beside Share Button -->
+        <EditText
+            android:id="@+id/messageEditText"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:background="@drawable/edittext_background"
+            android:hint="Send the Medical Report"
+            android:padding="10dp" />
+
+        <!-- Share/Send Button -->
+        <Button
+            android:id="@+id/shareImageButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:text="Send" />
+    </androidx.appcompat.widget.Toolbar>
+
+</RelativeLayout>
